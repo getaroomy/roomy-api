@@ -12,4 +12,4 @@ RUN pip install -r requirements.txt
 ENV PORT 8080
 
 # Run gunicorn bound to the 8080 port.
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 main:app
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --preload main:app
