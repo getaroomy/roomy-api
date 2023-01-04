@@ -1,6 +1,9 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 certs = {
   'type': os.getenv("API_FIREBASE_TYPE"),
