@@ -32,11 +32,7 @@ certs = {
   'auth_provider_x509_cert_url': auth_provider_x509_cert_url,
   'client_x509_cert_url': client_x509_cert_url
 }
-db = None
-try:
-  cred = credentials.Certificate(certs)
-  firebase_admin.initialize_app(cred)
-  db = firestore.client()
-except Exception as e:
-  print(f"Error initializing DB: {e}")
-  print(certs)
+
+cred = credentials.Certificate(certs)
+firebase_admin.initialize_app(cred)
+db = firestore.client()
