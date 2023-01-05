@@ -33,6 +33,10 @@ certs = {
   'client_x509_cert_url': client_x509_cert_url
 }
 
-cred = credentials.Certificate(certs)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+try:
+  cred = credentials.Certificate(certs)
+  firebase_admin.initialize_app(cred)
+  db = firestore.client()
+except Exception as e:
+  print(f"Error initializing DB: {e}")
+  print(certs)
