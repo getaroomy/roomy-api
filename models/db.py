@@ -32,7 +32,7 @@ certs = {
   'auth_provider_x509_cert_url': auth_provider_x509_cert_url,
   'client_x509_cert_url': client_x509_cert_url
 }
-
+db = None
 try:
   cred = credentials.Certificate(certs)
   firebase_admin.initialize_app(cred)
