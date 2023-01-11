@@ -1,4 +1,18 @@
  steps:
+ - name: 'gcr.io/cloud-builders/docker'
+   entrypoint: 'bash'
+   args: ['-c', 'echo Does YAML see the secret: $$API_FIREBASE_TYPE']
+   secretEnv:
+    - API_FIREBASE_TYPE
+    - API_FIREBASE_PROJECT_ID
+    - API_FIREBASE_PRIVATE_KEY_ID
+    - API_FIREBASE_PRIVATE_KEY
+    - API_FIREBASE_CLIENT_EMAIL
+    - API_FIREBASE_CLIENT_ID
+    - API_FIREBASE_AUTH_URI
+    - API_FIREBASE_TOKEN_URI
+    - API_FIREBASE_AUTH_PROVIDER_X509_CERT_URL
+    - API_FIREBASE_CLIENT_X509_CERT_URL
  # Build the container image
  - name: 'gcr.io/cloud-builders/docker'
    args:
