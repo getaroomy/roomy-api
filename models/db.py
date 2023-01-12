@@ -36,7 +36,6 @@ certs = {
   'client_x509_cert_url': client_x509_cert_url
 }
 
-print(f"Current Certs: {certs}")
 cred = credentials.Certificate(certs)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
