@@ -28,7 +28,7 @@ def get_rentals():
                 rentals.append(curr_rental)
         return jsonify({"ids": ids, "rentals": rentals}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @rentals_bp.route('/post_rental', methods=['POST'])
 def post_rental():
@@ -42,7 +42,7 @@ def post_rental():
         db.collection(u'rentals').add(rental)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @rentals_bp.route('/save_property', methods=['POST'])
 def save_property():
@@ -65,4 +65,4 @@ def save_property():
             })
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500

@@ -36,7 +36,7 @@ def set_user_info():
         db.collection(u'profiles').document(uid).set(info)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @users_bp.route('/update_profile_data', methods=['POST'])
 def update_profile_data():
@@ -51,7 +51,7 @@ def update_profile_data():
         db.collection(u'profiles').document(uid).update(profile)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @users_bp.route('/post_experience', methods=['POST'])
 def post_experience():
@@ -68,4 +68,4 @@ def post_experience():
         })
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500

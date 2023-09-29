@@ -23,7 +23,7 @@ def get_articles():
             posts.append(curr_post)
         return jsonify({"ids": ids, "posts": posts}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @feed_bp.route('/get_single_article', methods=['POST','GET'])
 def get_single_article():
@@ -37,7 +37,7 @@ def get_single_article():
         post = curr_post.to_dict()
         return jsonify({"ids":curr_post.id, "posts":post }), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @feed_bp.route('/post_article', methods=['POST'])
 def post_article():
@@ -51,7 +51,7 @@ def post_article():
         db.collection(u'articles').add(article)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @feed_bp.route('/update_article', methods=['POST'])
 def update_article():
@@ -66,6 +66,6 @@ def update_article():
         db.collection(u'articles').document(pid).update(update)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 

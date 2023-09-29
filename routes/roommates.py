@@ -24,7 +24,7 @@ def get_roommates():
             roommates.append(curr_roomy)
         return jsonify({"ids": ids, "roommates": roommates}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @roommates_bp.route('/post_roommate', methods=['POST'])
 def post_roommate():
@@ -38,4 +38,4 @@ def post_roommate():
         db.collection(u'roommates').add(roommate)
         return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
