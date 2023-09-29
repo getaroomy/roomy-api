@@ -12,14 +12,17 @@ def get_other_user():
     """
     try:
         raw_profile = db.collection(u'profiles').document(request.form['uid']).get()
-        profile = raw_profile.to_dict()
-        for res in profile.get('experiences'): # Attach profile pics to experiences
-            uid = res.get('uid')
-            curr_profile = db.collection(u'profiles').document(uid).get()
-            res['profilePic'] = curr_profile.to_dict()[u'photoURL']
-        return jsonify(profile), 200
+        if raw_profile.exists:
+            profile = raw_profile.to_dict()
+            for res in profile.get('experiences'): # Attach profile pics to experiences
+                uid = res.get('uid')
+                curr_profile = db.collection(u'profiles').document(uid).get()
+                res['profilePic'] = curr_profile.to_dict()[u'photoURL']
+            return jsonify(profile), 200
+        else:
+            return "User not found", 404
     except Exception as e:
-        return jsonify({f"An error occured: {e}"}), 400
+        return f"An error occured: {e}", 500
 
 @users_bp.route('/set_user_info', methods=['POST'])
 def set_user_info():
