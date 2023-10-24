@@ -9,8 +9,14 @@ rentals_bp = Blueprint('rentals_bp', __name__)
 def get_rentals():
     """Return all available rentals, 25 at a time"""
     try:
-        query = db.collection(u'rentals').order_by(u'date', direction=firestore.Query.DESCENDING).limit(25)
+        city = request.form.get('city')
         last_post_id = request.form.get('last_post')
+        query = (
+            db.collection(u'rentals')
+            .where('city','==',city)
+            .order_by(u'date', direction=firestore.Query.DESCENDING)
+            .limit(25)
+        )
         if last_post_id and len(last_post_id) > 0:
             last_snapshot = db.collection(u'rentals').document(last_post_id).get()
             query = query.start_at(last_snapshot)

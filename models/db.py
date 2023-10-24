@@ -7,7 +7,7 @@ load_dotenv()
 
 def get_env(name: str) -> str:
   env_var = os.getenv(name)
-  if env_var == None:
+  if env_var == None or env_var == '':
     print(f"Environment variable '{name}' is empty")
     return ''
   return env_var
