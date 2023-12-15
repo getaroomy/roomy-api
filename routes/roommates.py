@@ -2,40 +2,83 @@ import datetime
 from flask import request, jsonify, Blueprint
 from firebase_admin import firestore
 from models.db import db
+from models.wrappers import token_required
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 roommates_bp = Blueprint('roommates_bp', __name__)
 
-@roommates_bp.route('/get_roommates', methods=['POST','GET'])
+@roommates_bp.route('/get_roommates', methods=['GET'])
+@token_required
 def get_roommates():
-    """Return all available roommates"""
+    """Return all available roommates, 15 at a time"""
     try:
-        query = db.collection(u'roommates').order_by(u'date', direction=firestore.Query.DESCENDING)
+        city = request.args.get("city")
+        gender = request.args.get("gender")
+        roomWithGender = request.args.get("roomWithGender")
+        doIHavePets = request.args.get("doIHavePets", default=False, type=is_it_true)
+        fineWithHavingPets = request.args.get("fineWithHavingPets", type=is_it_true)
+        doISmoke = request.args.get("doISmoke", type=is_it_true)
+        fineWithSmokers = request.args.get("fineWithSmokers", type=is_it_true)
+        preferedRoommatesProps = filter_roommates(gender, roomWithGender, doISmoke, fineWithSmokers, doIHavePets, fineWithHavingPets)
+
+        query = (
+            db.collection(u'profiles')
+            .where(filter=FieldFilter(u'city','==',city))
+            .where(filter=FieldFilter(u'gender', 'in', preferedRoommatesProps.get('gender')))
+            .where(filter=FieldFilter(u'preferences.roomWithGender', 'in', preferedRoommatesProps.get('preferences.roomWithGender')))
+            .where(filter=FieldFilter(u'preferences.fineWithSmokers', '==', preferedRoommatesProps.get('preferences.fineWithSmokers')))
+            .where(filter=FieldFilter(u'preferences.doISmoke', 'in', preferedRoommatesProps.get('preferences.doISmoke')))
+            .where(filter=FieldFilter(u'preferences.fineWithHavingPets', '==', preferedRoommatesProps.get('preferences.fineWithHavingPets')))
+            .where(filter=FieldFilter(u'preferences.doIHavePets', 'in', preferedRoommatesProps.get('preferences.doIHavePets')))
+            .limit(15)
+        )
         results = query.stream()
         roommates = []
-        ids = []
         for res in results:
-            ids.append(res.id)
-
-            # Attach profile pic to posts
             curr_roomy = res.to_dict()
-            curr_profile = db.collection(u'profiles').document(curr_roomy[u'poster']).get()
-            curr_roomy[u'profilePic'] = curr_profile.to_dict()[u'photoURL']
-
             roommates.append(curr_roomy)
-        return jsonify({"ids": ids, "roommates": roommates}), 200
+        return jsonify({"roommates": roommates}), 200
     except Exception as e:
         return f"An error occured: {e}", 500
 
-@roommates_bp.route('/post_roommate', methods=['POST'])
-def post_roommate():
-    """Request Input: roommate (dictionary)
+def is_it_true(value):
+  return value.lower() == 'true'
 
-    Posts single roommate advertisement
+def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithSmokers: bool, doIHavePets: bool, fineWithHavingPets: bool) -> dict[str, any]:
     """
-    try:
-        roommate = request.json
-        roommate['date'] = datetime.datetime.utcnow()
-        db.collection(u'roommates').add(roommate)
-        return jsonify({"success": True}), 200
-    except Exception as e:
-        return f"An error occured: {e}", 500
+    Filter out people based on their preferences
+    """
+    roommatesGenderPreference = [gender, "any"]
+    usersGenderPreference = []
+    roommatesSmokerPreference = True
+    usersSmokerPreference = [True, False]
+    roommatesPetsPreference = False
+    usersPetPreference = [True, False]
+
+    # Gender
+    if roomWithGender == "any":
+        usersGenderPreference = ["male","female","nonbinary"]
+    else:
+        usersGenderPreference = [roomWithGender]
+
+    # Smoking
+    if not doISmoke:
+        roommatesSmokerPreference = False
+    if not fineWithSmokers:
+        usersSmokerPreference = [False]
+
+    # Pets
+    if not doIHavePets:
+        roommatesPetsPreference = True
+    if not fineWithHavingPets:
+        usersPetPreference = [False]
+        
+    preferedRoommatesProps = {
+        "gender": usersGenderPreference,
+        "preferences.roomWithGender": roommatesGenderPreference,
+        "preferences.fineWithSmokers": roommatesSmokerPreference,
+        "preferences.doISmoke": usersSmokerPreference,
+        "preferences.fineWithHavingPets": roommatesPetsPreference,
+        "preferences.doIHavePets": usersPetPreference
+    }
+    return preferedRoommatesProps
