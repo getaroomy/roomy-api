@@ -1,6 +1,5 @@
 import datetime
 from flask import request, jsonify, Blueprint
-from firebase_admin import firestore
 from models.db import db
 from models.wrappers import token_required
 from google.cloud.firestore_v1.base_query import FieldFilter
@@ -16,9 +15,9 @@ def get_roommates():
         gender = request.args.get("gender")
         roomWithGender = request.args.get("roomWithGender")
         doIHavePets = request.args.get("doIHavePets", default=False, type=is_it_true)
-        fineWithHavingPets = request.args.get("fineWithHavingPets", type=is_it_true)
-        doISmoke = request.args.get("doISmoke", type=is_it_true)
-        fineWithSmokers = request.args.get("fineWithSmokers", type=is_it_true)
+        fineWithHavingPets = request.args.get("fineWithHavingPets", default=False, type=is_it_true)
+        doISmoke = request.args.get("doISmoke", default=False, type=is_it_true)
+        fineWithSmokers = request.args.get("fineWithSmokers", default=False, type=is_it_true)
         preferedRoommatesProps = filter_roommates(gender, roomWithGender, doISmoke, fineWithSmokers, doIHavePets, fineWithHavingPets)
 
         query = (
