@@ -9,8 +9,12 @@ roommates_bp = Blueprint('roommates_bp', __name__)
 @roommates_bp.route('/get_roommates', methods=['GET'])
 @token_required
 def get_roommates():
-    """Return all available roommates, 15 at a time"""
+    """Return all available roommates in the users requested city, 15 at a time"""
     try:
+        uid, city, gender, roomWithGender, doIHavePets, fineWithHavingPets, doISmoke, fineWithSmokers = None, None, None, None, None, None, None, None
+        uid = request.args.get("uid")
+        if not uid:
+            raise NameError("UID not supplied")
         city = request.args.get("city")
         gender = request.args.get("gender")
         roomWithGender = request.args.get("roomWithGender")
@@ -18,10 +22,27 @@ def get_roommates():
         fineWithHavingPets = request.args.get("fineWithHavingPets", default=False, type=is_it_true)
         doISmoke = request.args.get("doISmoke", default=False, type=is_it_true)
         fineWithSmokers = request.args.get("fineWithSmokers", default=False, type=is_it_true)
+        if (city == None or
+            gender == None or
+            roomWithGender == None or
+            doIHavePets == None or
+            fineWithHavingPets == None or
+            doISmoke == None or
+            fineWithSmokers == None):
+            userPreferenceMetadata = get_user_preference_metadata(uid)
+            if userPreferenceMetadata:
+                city = userPreferenceMetadata.get("city")
+                gender = userPreferenceMetadata.get("gender")
+                roomWithGender = userPreferenceMetadata.get("roomWithGender")
+                doIHavePets = userPreferenceMetadata.get("doIHavePets")
+                fineWithHavingPets = userPreferenceMetadata.get("fineWithHavingPets")
+                doISmoke = userPreferenceMetadata.get("doISmoke")
+                fineWithSmokers = userPreferenceMetadata.get("fineWithSmokers")
         preferedRoommatesProps = filter_roommates(gender, roomWithGender, doISmoke, fineWithSmokers, doIHavePets, fineWithHavingPets)
 
         query = (
             db.collection(u'profiles')
+            .where(filter=FieldFilter(u'looking','==',True))
             .where(filter=FieldFilter(u'city','==',city))
             .where(filter=FieldFilter(u'gender', 'in', preferedRoommatesProps.get('gender')))
             .where(filter=FieldFilter(u'preferences.roomWithGender', 'in', preferedRoommatesProps.get('preferences.roomWithGender')))
@@ -41,7 +62,9 @@ def get_roommates():
         return f"An error occured: {e}", 500
 
 def is_it_true(value):
-  return value.lower() == 'true'
+    if value == None:
+        return None
+    return value.lower() == 'true'
 
 def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithSmokers: bool, doIHavePets: bool, fineWithHavingPets: bool) -> dict[str, any]:
     """
@@ -81,3 +104,24 @@ def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithS
         "preferences.doIHavePets": usersPetPreference
     }
     return preferedRoommatesProps
+
+def get_user_preference_metadata(uid: str):
+    print("get_user_preference_metadata")
+    try:
+        raw_profile = db.collection(u'profiles').document(uid).get()
+        if raw_profile.exists:
+            profile = raw_profile.to_dict()
+            prefs = profile.get('preferences')
+            preferences = {
+                'city': profile.get('city'),
+                'gender': profile.get('gender'),
+                'roomWithGender':prefs.get('roomWithGender'),
+                'doIHavePets':prefs.get('doIHavePets'),
+                'fineWithHavingPets':prefs.get('fineWithHavingPets'),
+                'doISmoke':prefs.get('doISmoke'),
+                'fineWithSmokers':prefs.get('fineWithSmokers'),
+            }
+            return preferences
+        return {}
+    except:
+        return {}
