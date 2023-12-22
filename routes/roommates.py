@@ -70,40 +70,52 @@ def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithS
     """
     Filter out people based on their preferences
     """
-    roommatesGenderPreference = [gender, "any"]
-    usersGenderPreference = []
-    roommatesSmokerPreference = True
-    usersSmokerPreference = [True, False]
-    roommatesPetsPreference = False
-    usersPetPreference = [True, False]
+    try:
+        roommatesGenderPreference = [gender, "any"]
+        usersGenderPreference = []
+        roommatesSmokerPreference = True
+        usersSmokerPreference = [True, False]
+        roommatesPetsPreference = False
+        usersPetPreference = [True, False]
 
-    # Gender
-    if roomWithGender == "any":
-        usersGenderPreference = ["male","female","nonbinary"]
-    else:
-        usersGenderPreference = [roomWithGender]
+        # Gender
+        if roomWithGender == "any":
+            usersGenderPreference = ["male","female","nonbinary"]
+        else:
+            usersGenderPreference = [roomWithGender]
 
-    # Smoking
-    if not doISmoke:
-        roommatesSmokerPreference = False
-    if not fineWithSmokers:
-        usersSmokerPreference = [False]
+        # Smoking
+        if not doISmoke:
+            roommatesSmokerPreference = False
+        if not fineWithSmokers:
+            usersSmokerPreference = [False]
 
-    # Pets
-    if not doIHavePets:
-        roommatesPetsPreference = True
-    if not fineWithHavingPets:
-        usersPetPreference = [False]
-        
-    preferedRoommatesProps = {
-        "gender": usersGenderPreference,
-        "preferences.roomWithGender": roommatesGenderPreference,
-        "preferences.fineWithSmokers": roommatesSmokerPreference,
-        "preferences.doISmoke": usersSmokerPreference,
-        "preferences.fineWithHavingPets": roommatesPetsPreference,
-        "preferences.doIHavePets": usersPetPreference
-    }
-    return preferedRoommatesProps
+        # Pets
+        if not doIHavePets:
+            roommatesPetsPreference = True
+        if not fineWithHavingPets:
+            usersPetPreference = [False]
+            
+        preferedRoommatesProps = {
+            "gender": usersGenderPreference,
+            "preferences.roomWithGender": roommatesGenderPreference,
+            "preferences.fineWithSmokers": roommatesSmokerPreference,
+            "preferences.doISmoke": usersSmokerPreference,
+            "preferences.fineWithHavingPets": roommatesPetsPreference,
+            "preferences.doIHavePets": usersPetPreference
+        }
+        return preferedRoommatesProps
+    except Exception as e:
+        print("Error in filter_roommates:", e)
+        preferedRoommatesProps = {
+            "gender": None,
+            "preferences.roomWithGender": None,
+            "preferences.fineWithSmokers": None,
+            "preferences.doISmoke": None,
+            "preferences.fineWithHavingPets": None,
+            "preferences.doIHavePets": None
+        }
+        return preferedRoommatesProps
 
 def get_user_preference_metadata(uid: str):
     print("get_user_preference_metadata")
