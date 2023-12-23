@@ -66,7 +66,7 @@ def is_it_true(value):
         return None
     return value.lower() == 'true'
 
-def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithSmokers: bool, doIHavePets: bool, fineWithHavingPets: bool) -> dict[str, any]:
+def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithSmokers: bool, doIHavePets: bool, fineWithHavingPets: bool) -> dict:
     """
     Filter out people based on their preferences
     """
