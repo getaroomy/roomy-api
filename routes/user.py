@@ -42,6 +42,7 @@ def get_other_user_profile():
                 uid = res.get('uid')
                 curr_profile = db.collection(u'profiles').document(uid).get()
                 res['photoURL'] = curr_profile.to_dict()[u'photoURL']
+                res['displayName'] = curr_profile.to_dict()[u'displayName']
             return jsonify(profile), 200
         else:
             return "User not found", 404
@@ -79,6 +80,7 @@ def update_profile_data():
         return f"An error occured: {e}", 500
 
 @users_bp.route('/post_experience', methods=['POST'])
+@token_required
 def post_experience():
     """Request Input: target_uid (string), exp (dictionary)
 
