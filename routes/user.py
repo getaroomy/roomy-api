@@ -87,7 +87,7 @@ def post_experience():
     try:
         info = request.json
         target_uid = info['target_uid']
-        exp = info['exp']
+        exp = info['experience']
         db.collection(u'profiles').document(target_uid).update({
             u'experiences': firestore.ArrayUnion([exp])
         })
