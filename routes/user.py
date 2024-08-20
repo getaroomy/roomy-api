@@ -7,9 +7,11 @@ users_bp = Blueprint('users_bp', __name__)
 @users_bp.route('/get_my_profile', methods=['GET'])
 @token_required
 def get_my_profile():
-    """Request Input: uid (string)
+    """
+    Request Input:
+    - uid (string)
     
-    Return other person's profile data on profile page
+    Return user's own profile data on profile page
     """
     try:
         url_uid = request.args.get("uid")
@@ -26,7 +28,9 @@ def get_my_profile():
 @users_bp.route('/get_other_user_profile', methods=['GET'])
 @token_required
 def get_other_user_profile():
-    """Request Input: uid (string)
+    """
+    Request Input:
+    - uid (string)
     
     Return other person's profile data on profile page
     """
@@ -52,7 +56,9 @@ def get_other_user_profile():
 @users_bp.route('/set_user_info', methods=['POST'])
 @token_required
 def set_user_info():
-    """Request Input: user_info (dictionary)
+    """
+    Request Input:
+    - user_info (dictionary)
 
     Initially set user info when first creating account
     """
@@ -67,7 +73,9 @@ def set_user_info():
 @users_bp.route('/update_profile_data', methods=['POST'])
 @token_required
 def update_profile_data():
-    """Request Input: user_info (dictionary)
+    """
+    Request Input:
+    - user_info (dictionary)
 
     Update existing user info
     """
@@ -82,7 +90,10 @@ def update_profile_data():
 @users_bp.route('/post_experience', methods=['POST'])
 @token_required
 def post_experience():
-    """Request Input: target_uid (string), exp (dictionary)
+    """
+    Request Input:
+    - target_uid (string)
+    - exp (dictionary)
 
     Add experience with another user
     """

@@ -7,7 +7,12 @@ rentals_bp = Blueprint('rentals_bp', __name__)
 
 @rentals_bp.route('/get_rentals', methods=['POST','GET'])
 def get_rentals():
-    """Return all available rentals, 25 at a time"""
+    """
+    Form Data:
+    - city (string)
+    - last_post_id (optional, string)
+    
+    Return all available rentals, 25 at a time"""
     try:
         city = request.form.get('city')
         last_post_id = request.form.get('last_post')
@@ -38,7 +43,9 @@ def get_rentals():
 
 @rentals_bp.route('/post_rental', methods=['POST'])
 def post_rental():
-    """Request Input: rental (dictionary)
+    """
+    Request Input:
+    - rental (dictionary)
 
     Posts single rental advertisement
     """
@@ -52,7 +59,12 @@ def post_rental():
 
 @rentals_bp.route('/save_property', methods=['POST'])
 def save_property():
-    """Request Input: uid (string), key (string), save (string)
+    """
+    Request Input:
+    - uid (string)
+    - key (string)
+    - save (string)
+
 
     Add / remove given property from user saved property list
     """

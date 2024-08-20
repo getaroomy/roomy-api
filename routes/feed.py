@@ -10,7 +10,12 @@ feed_bp = Blueprint('feed_bp', __name__)
 @feed_bp.route('/get_feed_posts', methods=['GET'])
 @token_required
 def get_feed_posts():
-    """Return all main page posts"""
+    """
+    Request Input:
+    - uid (string)
+    - city (optional, string)
+
+    Return all main page posts"""
     try:
         uid = request.args.get("uid")
         city = request.args.get("city")
@@ -39,7 +44,8 @@ def get_feed_posts():
 @feed_bp.route('/create_feed_post', methods=['POST'])
 @token_required
 def create_feed_post():
-    """Request Input: article (dictionary)
+    """Request Input:
+    - article (dictionary)
 
     Posts single main page post
     """

@@ -9,7 +9,18 @@ roommates_bp = Blueprint('roommates_bp', __name__)
 @roommates_bp.route('/get_roommates', methods=['GET'])
 @token_required
 def get_roommates():
-    """Return all available roommates in the users requested city, 15 at a time"""
+    """
+    Request Input:
+    - uid: (string)
+    - city: (optional, string)
+    - gender: (optional, string)
+    - roomWithGender: (optional, string)
+    - doIHavePets: (optional, boolean)
+    - fineWithHavingPets: (optional, boolean)
+    - doISmoke: (optional, boolean)
+    - fineWithSmokers: (optional, boolean)
+
+    Return all available roommates in the users requested city, 15 at a time"""
     try:
         uid, city, gender, roomWithGender, doIHavePets, fineWithHavingPets, doISmoke, fineWithSmokers = None, None, None, None, None, None, None, None
         uid = request.args.get("uid")
@@ -57,6 +68,11 @@ def get_roommates():
         return f"An error occured: {e}", 500
 
 def is_it_true(value):
+    """
+    Convert a string of a boolean to an actual boolean value.
+
+    (Weird workaround b/c request args aren't accepting booleans properly)
+    """
     if value == None:
         return None
     if value.lower() == 'true':
