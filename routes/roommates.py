@@ -8,7 +8,7 @@ roommates_bp = Blueprint('roommates_bp', __name__)
 
 @roommates_bp.route('/get_roommates', methods=['GET'])
 @token_required
-def get_roommates():
+def get_roommates(token_uid):
     """
     Request Input:
     - uid: (string)
@@ -23,6 +23,8 @@ def get_roommates():
     Return all available roommates in the users requested city, 15 at a time"""
     try:
         uid = request.args.get("uid")
+        if token_uid != uid:
+            return "Unauthorized", 401
         if not uid:
             return "UID not supplied", 400
 

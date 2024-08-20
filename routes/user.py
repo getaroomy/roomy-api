@@ -6,7 +6,7 @@ users_bp = Blueprint('users_bp', __name__)
 
 @users_bp.route('/get_my_profile', methods=['GET'])
 @token_required
-def get_my_profile():
+def get_my_profile(token_uid):
     """
     Request Input:
     - uid (string)
@@ -15,6 +15,8 @@ def get_my_profile():
     """
     try:
         url_uid = request.args.get("uid")
+        if token_uid != url_uid:
+            return "Unauthorized", 401
         print(url_uid)
         raw_profile = db.collection(u'profiles').document(url_uid).get()
         if raw_profile.exists:
@@ -27,7 +29,7 @@ def get_my_profile():
     
 @users_bp.route('/get_other_user_profile', methods=['GET'])
 @token_required
-def get_other_user_profile():
+def get_other_user_profile(token_uid):
     """
     Request Input:
     - uid (string)
@@ -55,7 +57,7 @@ def get_other_user_profile():
 
 @users_bp.route('/set_user_info', methods=['POST'])
 @token_required
-def set_user_info():
+def set_user_info(token_uid):
     """
     Request Input:
     - user_info (dictionary)
@@ -65,6 +67,8 @@ def set_user_info():
     try:
         info = request.json
         uid = info['uid']
+        if token_uid != uid:
+            return "Unauthorized", 401
         db.collection(u'profiles').document(uid).set(info)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -72,7 +76,7 @@ def set_user_info():
 
 @users_bp.route('/update_profile_data', methods=['POST'])
 @token_required
-def update_profile_data():
+def update_profile_data(token_uid):
     """
     Request Input:
     - user_info (dictionary)
@@ -82,6 +86,8 @@ def update_profile_data():
     try:
         info = request.json
         uid = info.get('uid')
+        if token_uid != uid:
+            return "Unauthorized", 401
         db.collection(u'profiles').document(uid).update(info)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -89,7 +95,7 @@ def update_profile_data():
 
 @users_bp.route('/post_experience', methods=['POST'])
 @token_required
-def post_experience():
+def post_experience(token_uid):
     """
     Request Input:
     - target_uid (string)

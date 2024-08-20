@@ -9,7 +9,7 @@ feed_bp = Blueprint('feed_bp', __name__)
 
 @feed_bp.route('/get_feed_posts', methods=['GET'])
 @token_required
-def get_feed_posts():
+def get_feed_posts(token_uid):
     """
     Request Input:
     - uid (string)
@@ -43,7 +43,7 @@ def get_feed_posts():
 
 @feed_bp.route('/create_feed_post', methods=['POST'])
 @token_required
-def create_feed_post():
+def create_feed_post(token_uid):
     """Request Input:
     - article (dictionary)
 
@@ -51,8 +51,10 @@ def create_feed_post():
     """
     try:
         body = request.json
+        uid = body.get("uid")
+        if token_uid != uid:
+            return "Unauthorized", 401
         if not body.get("city"):
-            uid = body.get("uid")
             curr_profile = db.collection(u'profiles').document(uid).get()
             body['city'] = curr_profile.to_dict()[u'city']
         db.collection(u'feed_posts').add(body)

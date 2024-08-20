@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request
+from flask import request, jsonify
 from firebase_admin import auth
 
 def token_required(f):
@@ -18,7 +18,16 @@ def token_required(f):
             idToken = auth.verify_id_token(id_token=token)
             if idToken is None:
                 return {"message": "Invalid Authentication token!"}, 401
+            
+            uid = idToken.get("uid")
+            if not uid:
+                return {"message": "UID not found in token!"}, 401
+
+            # Pass the UID to the route function
+            kwargs["token_uid"] = uid
+
         except Exception as e:
             return {"message": f"Something went wrong: {str(e)}"}, 500
+        
         return f(*args, **kwargs)
     return decorated
