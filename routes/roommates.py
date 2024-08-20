@@ -22,50 +22,45 @@ def get_roommates():
 
     Return all available roommates in the users requested city, 15 at a time"""
     try:
-        uid, city, gender, roomWithGender, doIHavePets, fineWithHavingPets, doISmoke, fineWithSmokers = None, None, None, None, None, None, None, None
         uid = request.args.get("uid")
         if not uid:
-            raise NameError("UID not supplied")
-        city = request.args.get("city")
-        gender = request.args.get("gender")
-        roomWithGender = request.args.get("roomWithGender")
-        doIHavePets = request.args.get("doIHavePets", default=None, type=is_it_true)
-        fineWithHavingPets = request.args.get("fineWithHavingPets", default=None, type=is_it_true)
-        doISmoke = request.args.get("doISmoke", default=None, type=is_it_true)
-        fineWithSmokers = request.args.get("fineWithSmokers", default=None, type=is_it_true)
-        if (city == None or gender == None or roomWithGender == None or doIHavePets == None or
-            fineWithHavingPets == None or doISmoke == None or fineWithSmokers == None):
-            userPreferenceMetadata = get_user_preference_metadata(uid, city == None, gender == None, roomWithGender == None, doIHavePets == None, fineWithHavingPets == None, doISmoke == None, fineWithSmokers == None)
-            if userPreferenceMetadata:
-                if city == None: city = userPreferenceMetadata.get("city")
-                if gender == None: gender = userPreferenceMetadata.get("gender")
-                if roomWithGender == None: roomWithGender = userPreferenceMetadata.get("roomWithGender")
-                if doIHavePets == None: doIHavePets = userPreferenceMetadata.get("doIHavePets")
-                if fineWithHavingPets == None: fineWithHavingPets = userPreferenceMetadata.get("fineWithHavingPets")
-                if doISmoke == None: doISmoke = userPreferenceMetadata.get("doISmoke")
-                if fineWithSmokers == None: fineWithSmokers = userPreferenceMetadata.get("fineWithSmokers")
-        preferedRoommatesProps = filter_roommates(gender, roomWithGender, doISmoke, fineWithSmokers, doIHavePets, fineWithHavingPets)
+            return "UID not supplied", 400
+
+        params = {
+            'city': request.args.get("city"),
+            'gender': request.args.get("gender"),
+            'roomWithGender': request.args.get("roomWithGender"),
+            'doIHavePets': request.args.get("doIHavePets", default=None, type=is_it_true),
+            'fineWithHavingPets': request.args.get("fineWithHavingPets", default=None, type=is_it_true),
+            'doISmoke': request.args.get("doISmoke", default=None, type=is_it_true),
+            'fineWithSmokers': request.args.get("fineWithSmokers", default=None, type=is_it_true)
+        }
+
+        if any(value is None for value in params.values()):
+            user_metadata = get_user_preference_metadata(uid, **{k: v is None for k, v in params.items()})
+            params = {k: user_metadata.get(k, v) if v is None else v for k, v in params.items()}
+
+        prefered_roommates_props = filter_roommates(params['gender'], params['roomWithGender'], 
+                                                    params['doISmoke'], params['fineWithSmokers'], 
+                                                    params['doIHavePets'], params['fineWithHavingPets'])
 
         query = (
             db.collection(u'profiles')
             .where(filter=FieldFilter(u'looking','==',True))
-            .where(filter=FieldFilter(u'city','==',city))
-            .where(filter=FieldFilter(u'gender', 'in', preferedRoommatesProps.get('gender')))
-            .where(filter=FieldFilter(u'preferences.roomWithGender', 'in', preferedRoommatesProps.get('preferences.roomWithGender')))
-            .where(filter=FieldFilter(u'preferences.fineWithSmokers', '==', preferedRoommatesProps.get('preferences.fineWithSmokers')))
-            .where(filter=FieldFilter(u'preferences.doISmoke', 'in', preferedRoommatesProps.get('preferences.doISmoke')))
-            .where(filter=FieldFilter(u'preferences.fineWithHavingPets', '==', preferedRoommatesProps.get('preferences.fineWithHavingPets')))
-            .where(filter=FieldFilter(u'preferences.doIHavePets', 'in', preferedRoommatesProps.get('preferences.doIHavePets')))
+            .where(filter=FieldFilter(u'city','==',params['city']))
+            .where(filter=FieldFilter(u'gender', 'in', prefered_roommates_props['gender']))
+            .where(filter=FieldFilter(u'preferences.roomWithGender', 'in', prefered_roommates_props['preferences.roomWithGender']))
+            .where(filter=FieldFilter(u'preferences.fineWithSmokers', '==', prefered_roommates_props['preferences.fineWithSmokers']))
+            .where(filter=FieldFilter(u'preferences.doISmoke', 'in', prefered_roommates_props['preferences.doISmoke']))
+            .where(filter=FieldFilter(u'preferences.fineWithHavingPets', '==', prefered_roommates_props['preferences.fineWithHavingPets']))
+            .where(filter=FieldFilter(u'preferences.doIHavePets', 'in', prefered_roommates_props['preferences.doIHavePets']))
             .limit(15)
         )
         results = query.stream()
-        roommates = []
-        for res in results:
-            curr_roomy = res.to_dict()
-            roommates.append(curr_roomy)
+        roommates = [res.to_dict() for res in results]
         return jsonify({"roommates": roommates}), 200
     except Exception as e:
-        return f"An error occured: {e}", 500
+        return f"An error occurred: {e}", 500
 
 def is_it_true(value):
     """
@@ -79,35 +74,17 @@ def is_it_true(value):
         return True
     return False
 
-def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithSmokers: bool, doIHavePets: bool, fineWithHavingPets: bool) -> dict:
+def filter_roommates(gender, roomWithGender, doISmoke, fineWithSmokers, doIHavePets, fineWithHavingPets):
     """
     Filter out people based on their preferences
     """
     try:
         roommatesGenderPreference = [gender, "any"]
-        usersGenderPreference = []
-        roommatesSmokerPreference = True
-        usersSmokerPreference = [True, False]
-        roommatesPetsPreference = False
-        usersPetPreference = [True, False]
-
-        # Gender
-        if roomWithGender == "any":
-            usersGenderPreference = ["male","female","nonbinary"]
-        else:
-            usersGenderPreference = [roomWithGender]
-
-        # Smoking
-        if not doISmoke:
-            roommatesSmokerPreference = False
-        if not fineWithSmokers:
-            usersSmokerPreference = [False]
-
-        # Pets
-        if not doIHavePets:
-            roommatesPetsPreference = True
-        if not fineWithHavingPets:
-            usersPetPreference = [False]
+        usersGenderPreference = ["male","female","nonbinary"] if roomWithGender == "any" else [roomWithGender]
+        roommatesSmokerPreference = False if not doISmoke else True
+        usersSmokerPreference = [False] if not fineWithSmokers else [True, False]
+        roommatesPetsPreference = True if not doIHavePets else False
+        usersPetPreference = [False] if not fineWithHavingPets else [True, False]
             
         preferedRoommatesProps = {
             "gender": usersGenderPreference,
@@ -120,7 +97,7 @@ def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithS
         return preferedRoommatesProps
     except Exception as e:
         print("Error in filter_roommates:", e)
-        preferedRoommatesProps = {
+        return {
             "gender": None,
             "preferences.roomWithGender": None,
             "preferences.fineWithSmokers": None,
@@ -128,9 +105,8 @@ def filter_roommates(gender: str, roomWithGender: str, doISmoke: bool, fineWithS
             "preferences.fineWithHavingPets": None,
             "preferences.doIHavePets": None
         }
-        return preferedRoommatesProps
 
-def get_user_preference_metadata(uid: str, city: bool, gender: bool, roomWithGender: bool, doIHavePets: bool, fineWithHavingPets: bool, doISmoke: bool, fineWithSmokers: bool):
+def get_user_preference_metadata(uid, city=False, gender=False, roomWithGender=False, doIHavePets=False, fineWithHavingPets=False, doISmoke=False, fineWithSmokers=False):
     """
     Only get user data that's not supplied through the URL
     """
@@ -138,7 +114,7 @@ def get_user_preference_metadata(uid: str, city: bool, gender: bool, roomWithGen
         raw_profile = db.collection(u'profiles').document(uid).get()
         if raw_profile.exists:
             profile = raw_profile.to_dict()
-            prefs = profile.get('preferences')
+            prefs = profile.get('preferences', {})
             preferences = {}
             if city: preferences['city'] = profile.get('city')
             if gender: preferences['gender'] = profile.get('gender')
