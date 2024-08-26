@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request
 from firebase_admin import auth
 
 def token_required(f):

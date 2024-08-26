@@ -39,12 +39,30 @@ def get_roommates(token_uid):
         }
 
         if any(value is None for value in params.values()):
-            user_metadata = get_user_preference_metadata(uid, **{k: v is None for k, v in params.items()})
-            params = {k: user_metadata.get(k, v) if v is None else v for k, v in params.items()}
+            user_metadata = get_user_preference_metadata(
+                uid, 
+                city=params['city'] is None,
+                gender=params['gender'] is None,
+                roomWithGender=params['roomWithGender'] is None,
+                doIHavePets=params['doIHavePets'] is None,
+                fineWithHavingPets=params['fineWithHavingPets'] is None,
+                doISmoke=params['doISmoke'] is None,
+                fineWithSmokers=params['fineWithSmokers'] is None
+            )
 
-        prefered_roommates_props = filter_roommates(params['gender'], params['roomWithGender'], 
-                                                    params['doISmoke'], params['fineWithSmokers'], 
-                                                    params['doIHavePets'], params['fineWithHavingPets'])
+            # Update params with user metadata for any missing values
+            for key, value in params.items():
+                if value is None:
+                    params[key] = user_metadata.get(key, value)
+
+        prefered_roommates_props = filter_roommates(
+            params['gender'],
+            params['roomWithGender'],
+            params['doISmoke'],
+            params['fineWithSmokers'],
+            params['doIHavePets'],
+            params['fineWithHavingPets']
+        )
 
         query = (
             db.collection(u'profiles')
